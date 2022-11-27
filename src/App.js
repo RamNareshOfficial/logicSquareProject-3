@@ -1,63 +1,46 @@
-import './App.css';
-
-import React from "react";
-import Header from './content/Header';
-import TextForm from './content/TextForm';
-import About from './content/About';
-import AlrtBtn from './content/AlrtBtn';
-import { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-
-
+import React, { useState, useEffect } from "react";
+import Navbar from "./components/Navbar";
+import "./App.css";
+import Counting from "./components/Counting";
 
 function App() {
-  const [mode, setMode] = useState("light");
-  const [alert, setAlert] = useState(null);
-  const showAlert = (massage, type) => {
-    setAlert({
-      msg: massage,
-      type: type
-    })
-    setTimeout(() => {
-      setAlert(null);
-    }, 1500);
-  }
-
-
-  const toggleMode = () => {
-    if (mode === "light") {
-      setMode("dark");
-      showAlert("Dark mode is enabled", "success");
-      document.body.style.backgroundColor = "#193364";
-      document.body.style.color = "white";
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    let localStorageData = localStorage.getItem("data");
+    if (!localStorageData) {
+      localStorage.setItem("data", JSON.stringify(data));
+    } else {
+      setData(JSON.parse(localStorageData));
     }
-    else {
-      setMode("light");
-      showAlert("light mode is enabled", "success");
-      document.body.style.backgroundColor = "white";
-      document.body.style.color = "#193364";
+  }, []);
 
+  const saveEmployeeData = (newdata,index) => {
+    let localStorageData = JSON.parse(localStorage.getItem("data"));
+    let data = [];
+
+    data.push(newdata);
+    if (!localStorageData) {
+      localStorage.setItem("data", JSON.stringify(data));
+    } else {
+      if(index){
+        let newDataArr = JSON.parse(JSON.stringify(localStorageData));
+        newDataArr[index] = newdata;
+        setData(newDataArr);
+        localStorage.setItem("data", JSON.stringify(newDataArr));
+
+      }else{
+        localStorageData.push(newdata);
+        setData(localStorageData)
+        localStorage.setItem("data", JSON.stringify(localStorageData));
+      }
     }
-  }
+  };
   return (
-  
-    <> 
-    <Router>
-        <Header title="TechRambo" mode={mode} toggleMode={toggleMode} />
-        <AlrtBtn alert={alert} />
-        <div className="container my-3">
-        <Routes>
-          <Route exact path="/about" element={<About/>}/>
-          <Route exact path="/" element={<TextForm showAlert={showAlert} heading="Enter the text to analyze" mode={mode} />}/>
-        </Routes>
-
-      </div>
-    </Router>
+    <>
+      <Navbar />
+      <Counting data={data} saveEmployeeData={saveEmployeeData} />
     </>
-  )
+  );
 }
-
-
-
 
 export default App;
